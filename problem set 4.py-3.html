@@ -1,0 +1,542 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
+# 1
+# Originally, I thought it was likely that Bernie Sanders would win the Democratic nomination, with Trump winning the republican nomination.
+# However, after Super Tuesday I believe it will now be Joe Biden against Donald Trump. 
+# I predict a very close race, with Trump narrowly edging Biden in the end.
+
+
+# In[2]:
+
+
+pip install realclearpolitics
+
+
+# In[3]:
+
+
+from rcp import get_polls, get_poll_data
+from pprint import pprint
+import pandas as pd
+import pprint as pprint
+import matplotlib.pyplot as plt
+
+
+# In[4]:
+
+
+# 2
+rcp https://www.realclearpolitics.com/epolls/2020/president/us/2020_democratic_presidential_nomination-6730.html
+
+
+# In[5]:
+
+
+# opening the file (deleted RCP average in excel)
+demNoms = pd.read_csv("democraticNominations.csv")
+demNoms
+# 3
+# observations about the data
+# 1: Sanders and Biden are the two front runners
+# 2: Gabbard is by far the lowest
+# #: Sanders has the highest spreads
+
+
+# In[6]:
+
+
+# 4 
+def loadAndCleanData(file):
+    pandaFile = pd.read_csv(file)
+    pandaFile.fillna(value = 0, inplace = True)
+    return pandaFile
+
+
+# In[7]:
+
+
+# 4
+cleanedData = loadAndCleanData("democraticNominations.csv")
+
+
+# In[8]:
+
+
+# 5
+def normalizeData(data):
+    data.append(coulmn)
+    name = "Undecided"
+
+
+# In[9]:
+
+
+# 5
+def normalizeData(data):
+    unDecidedList = []
+    for i,v in data.iterrows():
+        unDecidedList.append((100 - (v[3] + v[4])))
+    
+    data["Undecided"] = unDecidedList
+    return data
+
+
+# In[10]:
+
+
+# 6
+normalizeData(demNoms)
+
+
+# In[11]:
+
+
+# 7
+def plotCandidate(candidate, data):
+    plt.scatter(y=data[candidate], x=data["Poll"])
+
+
+# In[12]:
+
+
+plotCandidate("Sanders", demNoms)
+
+
+# In[13]:
+
+
+plotCandidate("Biden", demNoms)
+
+
+# In[14]:
+
+
+plotCandidate("Bloomberg", demNoms)
+
+
+# In[15]:
+
+
+plotCandidate("Warren", demNoms)
+
+
+# In[16]:
+
+
+plotCandidate("Buttigieg", demNoms)
+
+
+# In[17]:
+
+
+plotCandidate("Klobuchar", demNoms)
+
+
+# In[18]:
+
+
+plotCandidate("Steyer", demNoms)
+
+
+# In[19]:
+
+
+plotCandidate("Gabbard", demNoms)
+
+
+# In[20]:
+
+
+# 7 
+# Based on these plots, it is clear that Biden and Sanders are the two favorites
+
+
+# In[21]:
+
+
+# 8
+def statsPerCandidate(candidate, data):
+        averagePoll = data[candidate].mean()
+        return averagePoll
+
+
+# In[22]:
+
+
+# 9
+statsPerCandidate("Biden", demNoms)
+
+
+# In[23]:
+
+
+statsPerCandidate("Sanders", demNoms)
+
+
+# In[24]:
+
+
+statsPerCandidate("Warren", demNoms)
+
+
+# In[25]:
+
+
+statsPerCandidate("Bloomberg", demNoms)
+
+
+# In[26]:
+
+
+statsPerCandidate("Buttigieg", demNoms)
+
+
+# In[27]:
+
+
+statsPerCandidate("Klobuchar", demNoms)
+
+
+# In[28]:
+
+
+statsPerCandidate("Steyer", demNoms)
+
+
+# In[29]:
+
+
+# 9
+# Biden has the highest average polling numbers, closely followed by Sanders
+
+
+# In[30]:
+
+
+# 9 
+candidateList = []
+for candidate in demNoms.columns:
+    if candidate not in ['Poll', 'Date', "Sample", 'Spread', 'Undecided']:
+        candidateList.append(candidate)
+        print(candidate, statsPerCandidate(candidate, demNoms))
+
+
+# In[31]:
+
+
+# 10
+def cleanSample(data):
+    LV = []
+    RV = []
+    for i in data["Sample"]:
+        LV.append(i[-2:])
+        RV.append(i[:-2])
+    for i in range(len(RV)):
+        if RV[i] == '':
+            RV[i] = 0
+        else:
+            RV[i] = int(RV[i])
+    data["Sample Type"] = LV
+    data["Sample Size"] = RV
+    data = data.replace('', None)
+    return data
+        
+
+
+# In[32]:
+
+
+# 11
+cleanSample(demNoms)
+
+
+# In[33]:
+
+
+# 12
+def computePollWeight(data, pollName):
+    return sum(data[data['Poll'] == pollName]["Sample Size"]) / sum(data["Sample Size"])
+
+
+# In[34]:
+
+
+# 12
+computePollWeight(demNoms, "EmersonEmerson")
+
+
+# In[35]:
+
+
+# 12
+computePollWeight(demNoms, "CNNCNN")
+
+
+# In[36]:
+
+
+# 13
+def weightedStatsPerCandidate(candidate, data):
+    weighted = []
+    for poll in data["Poll"].unique():
+        x = sum(data[data["Poll"] == poll][candidate])
+        y = computePollWeight(data, poll)
+        weighted.append(x*y)
+    return sum(weighted)/len(weighted)
+    
+
+
+# In[37]:
+
+
+# 14
+weightedStatsPerCandidate("Sanders", demNoms)
+
+
+# In[38]:
+
+
+# 14
+weightedStatsPerCandidate("Biden", demNoms)
+
+
+# In[39]:
+
+
+# 14
+weightedStatsPerCandidate("Bloomberg", demNoms)
+
+
+# In[40]:
+
+
+# 14
+weightedStatsPerCandidate("Warren", demNoms)
+
+
+# In[41]:
+
+
+# 14
+weightedStatsPerCandidate("Buttigieg", demNoms)
+
+
+# In[42]:
+
+
+# 14
+weightedStatsPerCandidate("Klobuchar", demNoms)
+
+
+# In[43]:
+
+
+# 14
+weightedStatsPerCandidate("Steyer", demNoms)
+
+
+# In[44]:
+
+
+# 14
+# Based of these results, I think that Biden is the favorite
+
+
+# In[45]:
+
+
+# 15
+def computeCorrelation(candidate1, candidate2, data):
+    print(candidate1, "and", candidate2, " have a correlation of", data[candidate1].corr(data[candidate2]))
+    return data[candidate1].corr(data[candidate2])
+
+
+# In[46]:
+
+
+# 15
+computeCorrelation("Sanders", "Biden", demNoms)
+computeCorrelation("Sanders", "Bloomberg", demNoms)
+computeCorrelation("Sanders", "Warren", demNoms)
+computeCorrelation("Sanders", "Buttigieg", demNoms)
+computeCorrelation("Sanders", "Klobuchar", demNoms)
+computeCorrelation("Sanders", "Steyer", demNoms)
+
+
+# In[47]:
+
+
+# 15
+computeCorrelation("Biden", "Bloomberg", demNoms)
+computeCorrelation("Biden", "Warren", demNoms)
+computeCorrelation("Biden", "Buttigieg", demNoms)
+computeCorrelation("Biden", "Klobuchar", demNoms)
+computeCorrelation("Biden", "Steyer", demNoms)
+
+
+# In[48]:
+
+
+# 15
+computeCorrelation("Bloomberg", "Warren", demNoms)
+computeCorrelation("Bloomberg", "Buttigieg", demNoms)
+computeCorrelation("Bloomberg", "Klobuchar", demNoms)
+computeCorrelation("Bloomberg", "Steyer", demNoms)
+
+
+# In[49]:
+
+
+# 15
+computeCorrelation("Warren", "Buttigieg", demNoms)
+computeCorrelation("Warren", "Klobuchar", demNoms)
+computeCorrelation("Warren", "Steyer", demNoms)
+
+
+# In[50]:
+
+
+# 15
+computeCorrelation("Buttigieg", "Klobuchar", demNoms)
+computeCorrelation("Buttigieg", "Steyer", demNoms)
+
+
+# In[51]:
+
+
+# 15
+computeCorrelation("Klobuchar", "Steyer", demNoms)
+
+
+# In[52]:
+
+
+# 15
+# Note: I left off Gabbard because his numbers were too low and were causing issues in the data
+# The candidates taht have the highest correlation are
+# The candidates that have the lowest correlation are
+
+
+# In[76]:
+
+
+# 17
+def superTuesday(data, candidateList):
+    sandersST = []
+    bidenST = []
+    
+    for i, x in data.iterrows():
+        bidenCount = x["Biden"]
+        sandersCount = x["Sanders"]
+    
+        for candidate in candidateList:
+            if candidate != "Sanders" and candidate != "Biden":
+                bidenCorr = computeCorrelation("Biden", candidate, data)
+                sandersCorr = computeCorrelation("Sanders", candidate, data)
+            
+                if abs(bidenCorr) > abs(sandersCorr):
+                    bidenCount += x[candidate]
+                else:
+                    sandersCount += x[candidate]
+        bidenST.append(bidenCount)
+        sandersST.append(sandersCount)
+    data["bidenST"] = bidenST
+    data["sandersST"] = sandersST
+    bidenST = bidenST
+    sandersST = sandersST
+    
+
+
+# In[72]:
+
+
+# 16
+repeats = []
+for candidate1 in candidateList:
+    for candidate2 in candidateList:
+        if candidate1 != candidate2:
+            if [candidate1,candidate2] not in repeats and [candidate2, candidate1] not in repeats:
+                print(candidate1, "and", candidate2, "have a correlation of", computeCorrelation(candidate1, candidate2, demNoms))
+                repeats.append([candidate1, candidate2])
+
+
+# In[73]:
+
+
+# 18
+superTuesday(demNoms, candidateList)
+print("Sanders mean is", int(demNoms["sandersST"].mean()))
+print("Bidens mean is", int(demNoms["bidenST"].mean()))
+print("Sanders weighted mean is", int(weightedStatsPerCandidate("Sanders", demNoms)))
+print("Bidens weighted mean is", int(weightedStatsPerCandidate("Biden", demNoms)))
+
+
+# In[56]:
+
+
+# 18
+# Based on this data, I think Biden will win
+
+
+# In[57]:
+
+
+import numpy as np
+import scipy.stats
+
+
+# In[58]:
+
+
+# 19
+def getConfidenceIntervals(column):
+    npArray = 1.0 * np.array(column)
+    standardError = scipy.stats.sem(npArray)
+    n = len(column)
+    return standardError * scipy.stats.t.ppf((1+.95)/2.0,n-1)
+
+
+# In[64]:
+
+
+getConfidenceIntervals(demNoms["Biden"])
+getConfidenceIntervals(demNoms["Sanders"])
+
+
+# In[74]:
+
+
+# 20
+def runTTest(data1, data2):
+    return scipy.stats.ttest_ind(data1, data2)
+
+
+# In[82]:
+
+
+# 20
+print(runTTest(demNoms["Biden"], demNoms["Sanders"]))
+print(runTTest(demNoms["bidenST"], demNoms["sandersST"]))
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
